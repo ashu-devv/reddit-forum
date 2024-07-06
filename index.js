@@ -6,6 +6,8 @@ const bodyParser = require('body-parser');
 const app = express();
 
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 
