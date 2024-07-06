@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reddit-forum-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: reddit-forum
+  template:
+    metadata:
+      labels:
+        app: reddit-forum
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: reddit-forum
+          image: your-docker-registry/reddit-forum:latest
+          ports:
+            - containerPort: 4000
+          env:
+            - name: DB_HOST
+              value: mysql-service
+            - name: DB_USER
+              value: root
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              value: reddit_forum
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secrets
+                  key: JWT_SECRET
+          resources:
+            limits:
+              memory: "512Mi"   
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reddit-forum-service
+spec:
+  selector:
+    app: reddit-forum
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 4000
